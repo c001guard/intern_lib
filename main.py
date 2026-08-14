@@ -96,3 +96,32 @@ def show_statistics():
     print("Всего книг:", total)
     print("Самая старая книга:", oldest_year)
     print("Самая новая книга:", newest_year)
+
+def main():
+    choice = -1
+
+    while choice !=0:
+        show_menu()
+        choice_input = input("Выберите пункт меню: ").strip()
+
+        if not choice_input.isdigit():
+            print("Неверный ввод. Попробуйте снова.")
+            continue
+
+        choice = int(choice_input)
+
+        if choice == 1:
+            add_book()
+        elif choice == 2:
+            show_books()
+        elif choice == 3:
+            find_book()
+        elif choice == 4:
+            delete_book()
+        elif choice == 5:
+            show_statistics()
+        else:
+            print("Неверный пункт меню. Попробуйте снова.")
+
+if __name__=="__main__":
+    main()
