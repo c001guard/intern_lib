@@ -55,3 +55,23 @@ def find_book():
 
     if not found:
         print("Книга не найдена. ")
+
+def delete_book():
+    if len(books) == 0:
+        print("Библиотека пуста.")
+        return
+    show_books()
+    number_input = input("Введите номер книги для удаления: ").strip()
+
+    if not number_input.isdigit():
+        print("Неверный номер книги.")
+        return
+
+    number = int(number_input)
+
+    if number < 1 or number > len(books):
+        print("Неверный номер книги.")
+        return
+
+    removed = books.pop(number - 1)
+    print("Книга \"" + removed["title"] + "\" удалена.")
