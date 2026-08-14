@@ -9,7 +9,7 @@ def check_books():
 
 def show_menu():
     print("=" * 25)
-    print("            BOOK MANAGER")
+    print("      BOOK MANAGER")
     print("=" * 25)
     print("\n1.  Добавить книгу")
     print("2. Показать все книги")
