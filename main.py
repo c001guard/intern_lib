@@ -1,5 +1,11 @@
 books = []
 
+def check_books():
+    if len(books) == 0:
+        print("Библиотека пуста.")
+        return True
+    return False
+
 
 def show_menu():
     print("=" * 25)
@@ -31,8 +37,7 @@ def add_book()
 
 
 def show_books():
-    if len(books) == 0:
-        print("Бибилиотека пуста.")
+    if check_books():
         return
 
     for i in range(len(books)):
@@ -40,8 +45,7 @@ def show_books():
         print(str(i + 1) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
 
 def find_book():
-    if len(books) == 0:
-        print("Библиотека пуста.")
+    if check_books():
         return
 
     part = input("Введите часть названия книги: ").strip().lower()
@@ -57,8 +61,7 @@ def find_book():
         print("Книга не найдена. ")
 
 def delete_book():
-    if len(books) == 0:
-        print("Библиотека пуста.")
+    if check_books():
         return
     show_books()
     number_input = input("Введите номер книги для удаления: ").strip()
@@ -75,3 +78,21 @@ def delete_book():
 
     removed = books.pop(number - 1)
     print("Книга \"" + removed["title"] + "\" удалена.")
+
+def show_statistics():
+    if check_books():
+        return
+    total = len(books)
+    oldest_year = books[0]["year"]
+    newest_year = books[0]["year"]
+
+    for i in range(len(books)):
+        year = books[i]["year"]
+        if year < oldest_year:
+            oldest_year = year
+        if year > newest_year:
+            newest_year = year
+
+    print("Всего книг:", total)
+    print("Самая старая книга:", oldest_year)
+    print("Самая новая книга:", newest_year)
