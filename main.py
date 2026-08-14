@@ -27,7 +27,7 @@ def add_book()
         books.append({"title": title, "author": author, "year": year})
         print("Книга успешно добалена.")
     else:
-        print("ОшибкаЖ проверьте название, автора и год выпуска книги.")
+        print("Ошибка: проверьте название, автора и год выпуска книги.")
 
 
 def show_books():
@@ -42,3 +42,16 @@ def show_books():
 def find_book():
     if len(books) == 0:
         print("Библиотека пуста.")
+        return
+
+    part = input("Введите часть названия книги: ").strip().lower()
+    found = False
+
+    for i in range (len(books)):
+        book = books[i]
+        if part in book["title"].lower():
+            print(str(i + 1) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
+            found = True
+
+    if not found:
+        print("Книга не найдена. ")
