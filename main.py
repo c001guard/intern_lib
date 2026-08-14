@@ -18,7 +18,7 @@ def show_menu():
     print("5. Статистика")
     print("0. Выход")
 
-def add_book()
+def add_book():
     title = input("Введите название книги: ").strip()
     author = input("Введите автора книги: ").strip()
     year_input = input("Введите год выпуска: ")
@@ -29,7 +29,7 @@ def add_book()
         return
     year = int(year_input)
 
-    if title != "" and author!+ "" and year >= 1500 and year <= current_year:
+    if title != "" and author != "" and year >= 1500 and year <= current_year:
         books.append({"title": title, "author": author, "year": year})
         print("Книга успешно добалена.")
     else:
