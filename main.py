@@ -1,4 +1,11 @@
 books = []
+next_number = 1
+
+def is_dublicate(title, author, year):
+    for book in books:
+        if book["title"].lower() == title.lower() and book["author"].lower() == author.lower() and book["year"] == year:
+            return True
+    return False
 
 def check_books():
     if len(books) == 0:
@@ -11,7 +18,7 @@ def show_menu():
     print("=" * 25)
     print("      BOOK MANAGER")
     print("=" * 25)
-    print("\n1.  Добавить книгу")
+    print("\n1. Добавить книгу")
     print("2. Показать все книги")
     print("3. Найти книгу")
     print("4. Удалить книгу")
@@ -19,6 +26,7 @@ def show_menu():
     print("0. Выход")
 
 def add_book():
+    global next_number
     title = input("Введите название книги: ").strip()
     author = input("Введите автора книги: ").strip()
     year_input = input("Введите год выпуска: ")
@@ -30,8 +38,12 @@ def add_book():
     year = int(year_input)
 
     if title != "" and author != "" and year >= 1500 and year <= current_year:
-        books.append({"title": title, "author": author, "year": year})
-        print("Книга успешно добалена.")
+        if is_dublicate(title, author, year):
+            print("Такая книга уже есть в библиотеке.")
+        else:
+            books.append({"id": next_number, "title": title, "author": author, "year": year})
+            next_number += 1
+            print("Книга успешно добавлена.")
     else:
         print("Ошибка: проверьте название, автора и год выпуска книги.")
 
@@ -40,9 +52,9 @@ def show_books():
     if check_books():
         return
 
-    for i in range(len(books)):
-        book = books[i]
-        print(str(i + 1) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
+    for id in range(len(books)):
+        book = books[id]
+        print(str(book["id"]) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
 
 def find_book():
     if check_books():
@@ -51,14 +63,14 @@ def find_book():
     part = input("Введите часть названия книги: ").strip().lower()
     found = False
 
-    for i in range (len(books)):
-        book = books[i]
+    for id in range (len(books)):
+        book = books[id]
         if part in book["title"].lower():
-            print(str(i + 1) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
+            print(str(book["id"]) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
             found = True
 
     if not found:
-        print("Книга не найдена. ")
+        print("Книга не найдена.")
 
 def delete_book():
     if check_books():
@@ -72,12 +84,12 @@ def delete_book():
 
     number = int(number_input)
 
-    if number < 1 or number > len(books):
-        print("Неверный номер книги.")
-        return
-
-    removed = books.pop(number - 1)
-    print("Книга \"" + removed["title"] + "\" удалена.")
+    for id in range(len(books)):
+        if books[id]["id"] == number:
+            removed = books.pop(id)
+            print("Книга \"" + removed["title"] + "\" удалена.")
+            return
+    print("Неверный номер книги.")
 
 def show_statistics():
     if check_books():
@@ -86,8 +98,8 @@ def show_statistics():
     oldest_year = books[0]["year"]
     newest_year = books[0]["year"]
 
-    for i in range(len(books)):
-        year = books[i]["year"]
+    for id in range(len(books)):
+        year = books[id]["year"]
         if year < oldest_year:
             oldest_year = year
         if year > newest_year:
@@ -120,6 +132,8 @@ def main():
             delete_book()
         elif choice == 5:
             show_statistics()
+        elif choice == 0:
+            print("До свидания")
         else:
             print("Неверный пункт меню. Попробуйте снова.")
 
