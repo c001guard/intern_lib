@@ -21,7 +21,7 @@ def resolve_author():
     if author is not None:
         return author[0]
 
-    answer = input("Автор не найденю Добавить нового автора? (да/нет): ").strip()
+    answer = input("Автор не найден. Добавить нового автора? (да/нет): ").strip()
 
     if answer != "да":
         print("Добавление книги отменено.")
@@ -29,7 +29,7 @@ def resolve_author():
 
     country = input("Введите страну автора: ").strip()
     author_id = db.add_author(name, country if country != "" else None)
-    print("автор успешно добавлен.")
+    print("Автор успешно добавлен.")
     return author_id
 
 def add_author_action():
@@ -55,11 +55,15 @@ def show_authors_action():
 
 def add_book_action():
     title = input("Введите название книги: ").strip()
-    year_input = input ("Введите год выпуска книги:").strip()
+    year_input = input("Введите год выпуска книги:").strip()
     current_year = datetime.date.today().year
 
     if title == "":
         print("Ошибка: название книги не может быть пустым.")
+        return
+
+    if not year_input.isdigit():
+        print("Ошибка: год выпуска книги должен быть числом.")
         return
 
     year = int(year_input)
@@ -73,12 +77,12 @@ def add_book_action():
     if author_id is None:
         return
 
-    if db.is_book_duplicate(title, year, author_id):
+    if db.is_book_duplicate(title, author_id, year):
         print("Такая книга уже есть в библиотеке.")
         return
 
     db.add_book(title, year, author_id)
-    print("книга успешн добавлена.")
+    print("Книга успешно добавлена.")
 
 def show_books_action():
     books = db.get_books()
@@ -108,6 +112,12 @@ def find_book_action():
         print(str(book_id)+ ". " + title + " - " + author_name + " (" + str(year)+ ")")
 
 def delete_book_action():
+    books = db.get_books()
+
+    if check_empty(books, "Библиотека пуста."):
+        return
+
+    show_books_action()
     number_input = input("Введите номер книги для удаления: ").strip()
 
     if not number_input.isdigit():
@@ -131,9 +141,9 @@ def show_library_statistics_action():
         return
 
     print("Всего книг:", total)
-    print("Всего авторов", total_authors)
+    print("Всего авторов:", total_authors)
     print("Самая старая книга:", oldest)
-    print("Сама новая книга:", newest)
+    print("Самая новая книга:", newest)
 
 def add_reader_action():
     name = input("Введите имя читателя: ").strip()
@@ -166,7 +176,7 @@ def delete_reader_action():
     number_input = input("Введите номер читателя для удаления: ").strip()
 
     if not number_input.isdigit():
-        print("неверный номер читателя.")
+        print("Неверный номер читателя.")
         return
 
     result = db.delete_reader(int(number_input))
@@ -176,7 +186,7 @@ def delete_reader_action():
     elif result == "has_loans":
         print("Нельзя удалить читателя: у него есть история выдач.")
     else:
-        print("неверный номер читателя.")
+        print("Неверный номер читателя.")
 
 def issue_book_action():
     books = db.get_books()
@@ -186,7 +196,7 @@ def issue_book_action():
 
     readers = db.get_readers()
 
-    if check_empty(readers, "Список читателей пуст"):
+    if check_empty(readers, "Список читателей пуст."):
         return
 
     show_books_action()
@@ -213,7 +223,7 @@ def issue_book_action():
     print("Книга успешно выдана")
 
 def return_book_action():
-    book_input = input("Введите номер книги для возврата: ")
+    book_input = input("Введите номер книги для возврата: ").strip()
 
     if not book_input.isdigit():
         print("Неверный номер книги.")
@@ -243,7 +253,7 @@ def library_menu_loop():
         choice_input = input("Выберите пункт меню: ").strip()
 
         if not choice_input.isdigit():
-            print("неверный ввод. Попробуйте снова.")
+            print("Неверный ввод. Попробуйте снова.")
             continue
 
         choice = int(choice_input)

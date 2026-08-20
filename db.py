@@ -22,6 +22,9 @@ def add_author(name, country):
             "INSERT INTO authors (name, country) VALUES (%s, %s) RETURNING id;",
             (name, country),
         )
+        author_id = cur.fetchone()[0]
+    conn.commit()
+    return author_id
 
 def get_authors():
     with conn.cursor() as cur:
@@ -117,7 +120,7 @@ def get_readers():
 
 def reader_exists(reader_id):
     with conn.cursor() as cur:
-        cur.execute("SELECT FROM readers WHERE id = %s;", (reader_id,))
+        cur.execute("SELECT id FROM readers WHERE id = %s;", (reader_id,))
         return cur.fetchone() is not None
 
 def delete_reader(reader_id):
@@ -142,11 +145,10 @@ def is_book_issued(book_id):
 def issue_book(book_id, reader_id):
     with conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO loans (book_id, reader_id, loan_date) VALUES (%s, %s, (CURRENT_DATE);"
+            "INSERT INTO loans (book_id, reader_id, loan_date) VALUES (%s, %s, CURRENT_DATE);",
             (book_id, reader_id),
         )
     conn.commit()
-    return updated > 0
 
 def return_book(book_id):
     with conn.cursor() as cur:
