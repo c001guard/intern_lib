@@ -1,119 +1,277 @@
-books = []
-next_number = 1
+import datetime
 
-def is_dublicate(title, author, year):
-    for book in books:
-        if book["title"].lower() == title.lower() and book["author"].lower() == author.lower() and book["year"] == year:
-            return True
-    return False
+import db
+import menu
 
-def check_books():
-    if len(books) == 0:
-        print("Библиотека пуста.")
+def check_empty(items, message):
+    if len(items) == 0:
+        print(message)
         return True
     return False
 
+def resolve_author():
+    name = input("Введите имя автора: ").strip
 
-def show_menu():
-    print("=" * 25)
-    print("      BOOK MANAGER")
-    print("=" * 25)
-    print("\n1. Добавить книгу")
-    print("2. Показать все книги")
-    print("3. Найти книгу")
-    print("4. Удалить книгу")
-    print("5. Статистика")
-    print("0. Выход")
+    if name == "":
+        print("Ошибка: имя автора не может быть пустым.")
+        return None
 
-def add_book():
-    global next_number
-    title = input("Введите название книги: ").strip()
-    author = input("Введите автора книги: ").strip()
-    year_input = input("Введите год выпуска: ")
-    current_year = 2026
+    author = db.find_author_by_name(name)
 
-    if not year_input.isdigit():
-        print("Ошибка: год должен быть числом.")
+    if author is not None:
+        return author[0]
+
+    answer = input("Автор не найденю Добавить нового автора? (да/нет): ").strip()
+
+    if answer != "да":
+        print("Добавление книги отменено.")
+        return None
+
+    country = input("Введите страну автора: ").strip()
+    author_id = db.add_author(name, country if country != "" else None)
+    print("автор успешно добавлен.")
+    return author_id
+
+def add_author_action():
+    name = input("Введите имя автора: ").strip()
+    country = input("Введите страну автора: ").strip()
+
+    if name == "":
+        print("Ошибка: имя автора не может быть пустым.")
         return
+
+    db.add_author(name, country if country != "" else None)
+    print("Автор успешно добавлен.")
+
+def show_authors_action():
+    authors = db.get_authors()
+
+    if check_empty(authors, "Список авторов пуст."):
+        return
+
+    for author in authors:
+        author_id, name, country = author
+        print(str(author_id) + ". " + name + + " (" + (country or "-") + ")")
+
+def add_book_action():
+    title = input("Введите название книги: ").strip()
+    year_input = input ("Введите название книги:").strip()
+    current_year = datetime.date.today.year
+
+    if title == "":
+        print("Ошибка: название книги не может быть пустым.")
+        return
+
     year = int(year_input)
 
-    if title != "" and author != "" and year >= 1500 and year <= current_year:
-        if is_dublicate(title, author, year):
-            print("Такая книга уже есть в библиотеке.")
-        else:
-            books.append({"id": next_number, "title": title, "author": author, "year": year})
-            next_number += 1
-            print("Книга успешно добавлена.")
-    else:
-        print("Ошибка: проверьте название, автора и год выпуска книги.")
-
-
-def show_books():
-    if check_books():
+    if year < 1500 or year > current_year:
+        print("Ошибка: год должен быть от 1500 до " + str(current_year) + ".")
         return
 
-    for id in range(len(books)):
-        book = books[id]
-        print(str(book["id"]) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
+    author_id = resolve_author()
 
-def find_book():
-    if check_books():
+    if author_id is None:
         return
 
-    part = input("Введите часть названия книги: ").strip().lower()
-    found = False
+    if db.is_book_duplicate(title, year, author_id):
+        print("Такая книга уже есть в библиотеке.")
+        return
 
-    for id in range (len(books)):
-        book = books[id]
-        if part in book["title"].lower():
-            print(str(book["id"]) + ". " + book["title"] + " - " + book["author"] + " (" + str(book["year"]) + ")")
-            found = True
+    db.add_book(title, year, author_id)
+    print("книга успешн добавлена.")
 
-    if not found:
+def show_books_action():
+    books = db.get_books()
+
+    if check_empty(books, "Библиотека пуста."):
+        return
+
+    for book in books:
+        book_id, title, author_name, year = book
+        print(str(book_id) + ". " + title + " - " + author_name + " (" + str(year) + ")")
+
+def find_book_action():
+    books = db.get_books()
+
+    if check_empty(books, "Библиотека пуста."):
+        return
+
+    part = input("Введите часть названия книги: ").strip()
+    results = db.find_books(part)
+
+    if len(results) == 0:
         print("Книга не найдена.")
-
-def delete_book():
-    if check_books():
         return
-    show_books()
-    number_input = input("Введите номер книги для удаления: ").strip()
+
+    for book in results:
+        book_id, title, author_name, year = book
+        print(str(book_id)+ ". " + title + " - " + author_name + " (" + str(year)+ ")")
+
+def delete_book_action():
+    number_input = input("Введите номер книги для удаления: ").ctrip()
 
     if not number_input.isdigit():
         print("Неверный номер книги.")
         return
 
-    number = int(number_input)
+    result = db.delete_book(int(number_input))
 
-    for id in range(len(books)):
-        if books[id]["id"] == number:
-            removed = books.pop(id)
-            print("Книга \"" + removed["title"] + "\" удалена.")
-            return
-    print("Неверный номер книги.")
+    if result == "deleted":
+        print("Книга удалена.")
+    elif result == "has_loans":
+        print("Нельзя удалить книгу: по ней есть история выдач.")
+    else:
+        print("Неверный номер книги.")
 
-def show_statistics():
-    if check_books():
+def show_library_statistics_action():
+    total, oldest, newest, total_authors = db.book_statistics()
+
+    if total == 0:
+        print("Библиотека пуста.")
         return
-    total = len(books)
-    oldest_year = books[0]["year"]
-    newest_year = books[0]["year"]
-
-    for id in range(len(books)):
-        year = books[id]["year"]
-        if year < oldest_year:
-            oldest_year = year
-        if year > newest_year:
-            newest_year = year
 
     print("Всего книг:", total)
-    print("Самая старая книга:", oldest_year)
-    print("Самая новая книга:", newest_year)
+    print("Всего авторов", total_authors)
+    print("Самая старая книга:", oldest)
+    print("Сама новая книга:", newest)
 
-def main():
+def add_reader_action():
+    name = input("Введите имя читателя: ").strip()
+    city = input("Введите город читателя: ").strip()
+
+    if name == "":
+        print("Ошибка: имя читателя не может быть пустым.")
+        return
+
+    db.add_reader(name, city if city != "" else None)
+    print("Читатель успешно добавлен.")
+
+def show_readers_action():
+    readers = db.get_readers()
+
+    if check_empty(readers, "Список читателей пуст."):
+        return
+
+    for reader in readers:
+        reader_id, name, city = reader
+        print(str(reader_id) + ". " + name + " (" + (city or "-") + ")")
+
+def delete_reader_action():
+    readers = db.get_readers()
+
+    if check_empty(readers, "Список читателей пуст."):
+        return
+
+    show_readers_action()
+    number_input = input("Введите номер читателя для удаления: ").strip()
+
+    if not number_input.isdigit():
+        print("неверный номер читателя.")
+        return
+
+    result = db.delete_reader(int(number_input))
+
+    if result == "deleted":
+        print("Читатель удален.")
+    elif result == "has_loans":
+        print("Нельзя удалить читателя: у него есть история выдач.")
+    else:
+        print("неверный номер читателя.")
+
+def issue_book_action():
+    books = db.get_books()
+
+    if check_empty(books, "Библиотека пуста."):
+        return
+
+    readers = db.get_readers()
+
+    if check_empty(readers, "Список читателей пуст"):
+        return
+
+    show_books_action()
+    book_input = input("Введите номер книги для выдачи: ").strip()
+
+    if not book_input.isdigit() or not db.book_exists(int(book_input)):
+        print("Неверный номер книги.")
+        return
+
+    book_id = int(book_input)
+
+    if db.is_book_issued(book_id):
+        print("Эта книга уже выдана и еще не возвращена.")
+        return
+
+    show_readers_action()
+    reader_input = input("Введите номер читателя: ").strip()
+
+    if not reader_input.isdigit() or not db.reader_exists():
+        print("Неверный номер читателя.")
+        return
+
+    db.issue_book(book_id, int(reader_input))
+    print("Книга успешно выдана")
+
+def return_book_action():
+    book_input = input("Введите номер книги для возврата: ")
+
+    if not book_input.isdigit():
+        print("Неверный номер книги.")
+        return
+
+    if db.return_book(int(book_input)):
+        print("Книга успешно возвращена.")
+    else:
+        print("У этой книги нет активной выдачи.")
+
+def show_reader_statistics_action():
+    total_readers, active_loans, total_loans = db.reader_statistics()
+
+    if total_readers == 0:
+        print("Список читателей пуст.")
+        return
+
+    print("Всего читателей:", total_readers)
+    print("Книг на руках:", active_loans)
+    print("Всего выдач за все время:", total_loans)
+
+def library_menu_loop():
     choice = -1
 
-    while choice !=0:
-        show_menu()
+    while choice != 0:
+        menu.authors_menu()
+        choice_input = input("Выберите пункт меню: ").strip()
+
+        if not choice_input.isdigit():
+            print("неверный ввод. Попробуйте снова.")
+            continue
+
+        choice = int(choice_input)
+
+        if choice == 1:
+            add_author_action()
+        elif choice == 2:
+            show_authors_action()
+        elif choice == 3:
+            add_book_action()
+        elif choice == 4:
+            show_books_action()
+        elif choice == 5:
+            find_book_action()
+        elif choice == 6:
+            delete_book_action()
+        elif choice == 7:
+            show_library_statistics_action()
+        elif choice == 0:
+            pass
+        else:
+            print("Неверный пункт меню. Попробуйте снова.")
+
+def readers_menu_loop():
+    choice = -1
+
+    while choice != 0:
+        menu.readers_menu()
         choice_input = input("Выберите пункт меню: ").strip()
 
         if not choice_input.isdigit():
@@ -123,19 +281,49 @@ def main():
         choice = int(choice_input)
 
         if choice == 1:
-            add_book()
+            add_reader_action()
         elif choice == 2:
-            show_books()
+            show_readers_action()
         elif choice == 3:
-            find_book()
+            delete_reader_action()
         elif choice == 4:
-            delete_book()
+            issue_book_action()
         elif choice == 5:
-            show_statistics()
+            return_book_action()
+        elif choice == 6:
+            show_reader_statistics_action()
         elif choice == 0:
-            print("До свидания")
+            pass
         else:
             print("Неверный пункт меню. Попробуйте снова.")
 
-if __name__=="__main__":
+def main():
+    db.connect()
+
+    try:
+        choice = -1
+
+        while choice != 0:
+            menu.main_menu()
+            choice_input = input("Выберите пункт меню: ").strip()
+
+            if not choice_input.isdigit():
+                print("Неверный ввод. Попробуйте снова.")
+                continue
+
+            choice = int(choice_input)
+
+            if choice == 1:
+                library_menu_loop()
+            elif choice == 2:
+                readers_menu_loop()
+            elif choice == 0:
+                print("До свидания.")
+            else:
+                print("Неверный пункт меню. Попробуйте снова.")
+
+    finally:
+        db.close()
+
+if __name__ == "__main__":
     main()
