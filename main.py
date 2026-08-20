@@ -10,7 +10,7 @@ def check_empty(items, message):
     return False
 
 def resolve_author():
-    name = input("Введите имя автора: ").strip
+    name = input("Введите имя автора: ").strip()
 
     if name == "":
         print("Ошибка: имя автора не может быть пустым.")
@@ -51,12 +51,12 @@ def show_authors_action():
 
     for author in authors:
         author_id, name, country = author
-        print(str(author_id) + ". " + name + + " (" + (country or "-") + ")")
+        print(str(author_id) + ". " + name + " (" + (country or "-") + ")")
 
 def add_book_action():
     title = input("Введите название книги: ").strip()
-    year_input = input ("Введите название книги:").strip()
-    current_year = datetime.date.today.year
+    year_input = input ("Введите год выпуска книги:").strip()
+    current_year = datetime.date.today().year
 
     if title == "":
         print("Ошибка: название книги не может быть пустым.")
@@ -108,7 +108,7 @@ def find_book_action():
         print(str(book_id)+ ". " + title + " - " + author_name + " (" + str(year)+ ")")
 
 def delete_book_action():
-    number_input = input("Введите номер книги для удаления: ").ctrip()
+    number_input = input("Введите номер книги для удаления: ").strip()
 
     if not number_input.isdigit():
         print("Неверный номер книги.")
@@ -205,7 +205,7 @@ def issue_book_action():
     show_readers_action()
     reader_input = input("Введите номер читателя: ").strip()
 
-    if not reader_input.isdigit() or not db.reader_exists():
+    if not reader_input.isdigit() or not db.reader_exists(int(reader_input)):
         print("Неверный номер читателя.")
         return
 
